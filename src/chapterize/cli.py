@@ -14,13 +14,13 @@ from chapterize.copier import copy_files_with_mapping
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python -m chapterize.cli <pdf_folder>")
-        sys.exit(1)
-    folder = Path(sys.argv[1])
-    if not folder.is_dir():
-        print(f"Error: {folder} is not a directory.")
-        sys.exit(1)
+    print("Welcome to chapterize!")
+    while True:
+        folder_input = input("Enter the path to your PDF folder: ").strip()
+        folder = Path(folder_input)
+        if folder.is_dir():
+            break
+        print(f"Error: {folder} is not a directory. Please try again.")
     pdf_files = [f for f in folder.iterdir() if f.suffix.lower() == ".pdf"]
     if not pdf_files:
         print("No PDF files found in the folder.")
@@ -31,6 +31,7 @@ def main():
     for f in pdf_files:
         text = extract_first_page_text(f)
         file_candidates[f.name] = extract_candidates(text)
+    print("\nRunning chapter inference and global logic. This may take a moment...")
     # Step 2: Inference
     result = global_inference(file_candidates, {})
     # Step 3: Interactive sign-off

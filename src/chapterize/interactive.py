@@ -15,17 +15,17 @@ from typing import Dict, List, Tuple
 import sys
 
 def print_table(mapping: Dict[str, Dict], top_n: int = 3):
-    print("\nSuggested Chapter Assignments:\n")
-    print(f"{'File':40} | {'Best':8} | {'Conf':6} | Candidates")
-    print("-" * 80)
+    print("\nSuggested Chapter Assignments (confidence: 0.00 = low, 1.00 = high):\n")
+    print(f"{'File':40} | {'Best':8} | {'Confidence':10} | Candidates (chapter [confidence])")
+    print("-" * 100)
     for fname, info in mapping.items():
         best = info['best'][0] if info['best'] else '-'
         conf = f"{info['best'][1]:.2f}" if info['best'] else '-'
-        cands = ', '.join([f"{c[0]}({c[1]:.2f})" for c in info['candidates'][:top_n]])
+        cands = ', '.join([f"{c[0]} [{c[1]:.2f}]" for c in info['candidates'][:top_n]])
         status = info['status']
         marker = '!' if status != 'ok' else ' '
-        print(f"{fname:40} | {best:8} | {conf:6} | {cands} {marker}")
-    print("\n! = ambiguous or missing assignment\n")
+        print(f"{fname:40} | {best:8} | {conf:10} | {cands} {marker}")
+    print("\n! = ambiguous or missing assignment\nConfidence: 0.00 = low, 1.00 = high\n")
 
 def interactive_signoff(mapping: Dict[str, Dict], top_n: int = 3):
     print_table(mapping, top_n)
