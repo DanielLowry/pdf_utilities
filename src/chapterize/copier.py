@@ -25,10 +25,10 @@ def copy_files_with_mapping(
     assignments: Dict[str, Optional[str]],
     naming_func,
     target_name: str = "chapterize"
-) -> Dict[str, str]:
+) -> (Dict[str, str], Path):
     """
     Copies files from src_folder to target folder using assignments (filename -> chapter number),
-    applies naming_func to generate target filename, resolves collisions, and returns mapping.
+    applies naming_func to generate target filename, resolves collisions, and returns (mapping, target_folder).
     """
     target_folder = get_next_folder(src_folder, target_name)
     mapping = {}
@@ -48,4 +48,4 @@ def copy_files_with_mapping(
     # Save mapping.json
     with open(target_folder / "mapping.json", "w", encoding="utf-8") as f:
         json.dump(mapping, f, indent=2)
-    return mapping
+    return mapping, target_folder

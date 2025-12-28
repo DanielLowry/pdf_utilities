@@ -21,11 +21,8 @@ def test_copy_files_with_mapping(tmp_path):
     for fname in files:
         (src / fname).write_text(f"PDF {fname}")
     assignments = {"a.pdf": "1", "b.pdf": "2", "c.pdf": None}
-    mapping = copy_files_with_mapping(src, assignments, suggest_filename)
-    # Check files copied
-    target_folder = get_next_folder(src.parent, "chapterize")
+    mapping, target_folder = copy_files_with_mapping(src, assignments, suggest_filename)
     for fname in files:
-        # Should exist in mapping
         assert fname in mapping
-    # Check mapping.json exists
+    # Check mapping.json exists in the folder just used
     assert (target_folder / "mapping.json").exists()
