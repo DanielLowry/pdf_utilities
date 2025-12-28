@@ -25,6 +25,9 @@ jobs:
         run: |
           uv venv
           uv pip install -r requirements.txt
+      - name: Install package
+        run: |
+          uv run pip install -e .
       - name: Run tests
         run: |
           uv run pytest
