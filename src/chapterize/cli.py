@@ -5,12 +5,17 @@ This script integrates extraction, inference, interactive sign-off, naming, and 
 """
 import sys
 from pathlib import Path
-from chapterize.extract import extract_first_page_text
+
 from chapterize.candidates import extract_candidates
-from chapterize.inference import global_inference
-from chapterize.naming import suggest_filename
-from chapterize.interactive import interactive_signoff
 from chapterize.copier import copy_files_with_mapping
+from chapterize.extract import extract_first_page_text
+from chapterize.filenames import extract_chapter_from_filename
+from chapterize.inference import global_inference
+from chapterize.interactive import interactive_signoff
+from chapterize.logging_config import configure_logging
+from chapterize.naming import suggest_filename
+
+logger = configure_logging()
 
 
 def main():
@@ -21,6 +26,7 @@ def main():
         if folder.is_dir():
             break
         print(f"Error: {folder} is not a directory. Please try again.")
+    logger.debug("User selected folder %s", folder.resolve())
     pdf_files = [f for f in folder.iterdir() if f.suffix.lower() == ".pdf"]
     if not pdf_files:
         print("No PDF files found in the folder.")
@@ -30,10 +36,25 @@ def main():
     file_candidates = {}
     for f in pdf_files:
         text = extract_first_page_text(f)
-        file_candidates[f.name] = extract_candidates(text)
+        candidates = extract_candidates(text)
+        file_candidates[f.name] = candidates
+        logger.debug("Extracted %d candidates for %s", len(candidates), f.name)
+    logger.debug("Filename-based chapter hints:")
+    filename_chapters = {}
+    for f in pdf_files:
+        chapter_hint = extract_chapter_from_filename(f.name)
+        if chapter_hint:
+            filename_chapters[f.name] = chapter_hint
+            logger.debug("Filename %s yields chapter %s", f.name, chapter_hint)
+    logger.debug("Using filename chapters: %s", filename_chapters)
     print("\nRunning chapter inference and global logic. This may take a moment...")
     # Step 2: Inference
-    result = global_inference(file_candidates, {})
+    result = global_inference(file_candidates, filename_chapters)
+    summary = {
+        fname: {"best": info["best"], "status": info["status"]}
+        for fname, info in result.items()
+    }
+    logger.debug("Inference summary: %s", summary)
     # Step 3: Interactive sign-off
     assignments = interactive_signoff(result)
     # Step 4: Copy files

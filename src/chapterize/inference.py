@@ -35,13 +35,15 @@ Usage:
 See tests/test_inference.py for examples.
 """
 
-from typing import Dict, List, Tuple, Optional
+import logging
 from collections import Counter
+from typing import Dict, List, Tuple, Optional
 
 # Candidate: (chapter_str, confidence)
 Candidate = Tuple[str, float]
 
 MIN_CANDIDATE_CONFIDENCE = 0.1
+logger = logging.getLogger("chapterize.inference")
 
 def global_inference(
     file_candidates: Dict[str, List[Candidate]],
@@ -77,6 +79,12 @@ def global_inference(
     chapters_in_filenames = set(filename_chapters.values())
     assigned_chapters = Counter()
     result = {}
+    logger.debug(
+        "Starting global inference with filename hints=%s, min_confidence=%.2f, threshold=%.2f",
+        filename_chapters,
+        min_confidence,
+        candidate_threshold,
+    )
     for fname, cands in file_candidates.items():
         if not cands:
             result[fname] = {"best": None, "candidates": [], "status": "none"}
@@ -97,8 +105,13 @@ def global_inference(
             score = max(0.0, min(score, 1.0))
             scored.append((c, score))
         scored.sort(key=lambda x: x[1], reverse=True)
+        logger.debug("Scores for %s before filtering: %s", fname, scored)
         filtered = [(c, s) for c, s in scored if s >= candidate_threshold]
+        logger.debug(
+            "Filtered scores for %s (threshold %.2f): %s", fname, candidate_threshold, filtered
+        )
         if not filtered:
+            logger.debug("No candidates pass the threshold for %s", fname)
             result[fname] = {"best": None, "candidates": [], "status": "none"}
             continue
         best = filtered[0]

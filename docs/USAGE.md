@@ -20,6 +20,7 @@
 - Flexible filename templates
 - Safe copying, collision handling
 - Mapping file for auditability
+- Filename hints: filenames such as `Chapter 3 - intro.pdf` or `05-overview.pdf` are automatically parsed and used to bias inference.
 
 ## Requirements
 - Python 3.10+
@@ -32,6 +33,7 @@
 ## Advanced
 - To change the output folder name, edit `PROGRAM_NAME` in `src/chapterize/config.py`.
 - For custom filename templates, modify `src/chapterize/naming.py`.
+- To see what `chapterize` is doing internally, set logging via the `CHAPTERIZE_LOG_LEVEL` (defaults to `WARNING`). You can also write the log to a file by setting `CHAPTERIZE_LOG_FILE` before running the CLI; the logger uses the `chapterize` namespace.
 
 ## Limitations
 - No OCR fallback (yet)
