@@ -12,7 +12,9 @@ from typing import Optional
 from chapterize.candidates import roman_to_int
 
 ROMAN_FILENAME_PATTERN = re.compile(r"^(?:chapter|ch)[\s._-]*([IVXLCDM]+)\b", re.IGNORECASE)
-CHAPTER_FILENAME_PATTERN = re.compile(r"^(?:chapter|ch)[\s._-]*(\d{1,3})\b", re.IGNORECASE)
+CHAPTER_FILENAME_PATTERN = re.compile(
+    r"^(?:chapter|ch)[\s._-]*(\d{1,3})(?:\b|[_\.-])", re.IGNORECASE
+)
 NUMBER_PREFIX_PATTERN = re.compile(r"^(\d{1,3})(?:[\s._-]|$)")
 
 

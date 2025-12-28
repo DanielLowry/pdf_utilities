@@ -1,3 +1,4 @@
+import pytest
 from chapterize.inference import global_inference
 
 def test_global_inference_basic():
@@ -77,9 +78,11 @@ def test_duplicate_candidates_different_confidence_produces_mixed_statuses():
         'b.pdf': [('1', 0.55)]
     }
     result = global_inference(file_candidates, {})
-    assert result['a.pdf']['best'] == ('1', 0.55)
+    assert result['a.pdf']['best'][0] == '1'
+    assert result['a.pdf']['best'][1] == pytest.approx(0.55)
     assert result['a.pdf']['status'] == 'ok'
-    assert result['b.pdf']['best'] == ('1', 0.15)
+    assert result['b.pdf']['best'][0] == '1'
+    assert result['b.pdf']['best'][1] == pytest.approx(0.15)
     assert result['b.pdf']['status'] == 'none'
 
 
@@ -91,7 +94,7 @@ def test_duplicate_candidates_same_score_rejects_low_unique_option():
     result = global_inference(file_candidates, {})
     assert result['a.pdf']['best'][0] == '1'
     assert result['b.pdf']['best'][0] == '1'
-    assert result['b.pdf']['candidates'][0][1] == 0.55
+    assert result['b.pdf']['candidates'][0][1] == pytest.approx(0.55)
     assert result['b.pdf']['candidates'][1][0] == '2'
 
 
@@ -142,5 +145,5 @@ def test_duplicate_penalty_applies_when_best_conflicts():
     result = global_inference(file_candidates, {})
     # Both files initially favor chapter 1, so it incurs a duplicate penalty.
     assert result['a.pdf']['best'][0] == '1'
-    assert result['a.pdf']['best'][1] == 0.55
+    assert result['a.pdf']['best'][1] == pytest.approx(0.55)
     assert result['b.pdf']['best'][0] == '2'
