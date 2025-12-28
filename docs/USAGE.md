@@ -7,7 +7,8 @@
 ## Quick Start
 
 1. Place your PDFs in a folder.
-2. Run the main script (see README for entrypoint).
+2. Run the main entrypoint script:
+    - Example: `python -m chapterize.cli` (or integrate your own runner)
 3. Review the interactive sign-off screen:
    - Accept all assignments, or edit/skip files as needed.
 4. Files are copied into `chapterize` (or `chapterize_2`, etc.), with collisions resolved by numeric suffixes.
