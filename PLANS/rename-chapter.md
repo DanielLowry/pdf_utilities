@@ -27,3 +27,56 @@
 - **Testing:** use `pytest` with small unit tests for suggestion & collision logic and an integration test that simulates user input.
 
 > **Deliverable:** this file should be saved as `PLANS/rename-chapter.md` and used as the committed plan for the PR.
+
+---
+
+## Implementation Phases 🛠️
+
+### Phase 1 — Parsing & Inference (MVP priority: High)
+- Implement `extract_first_page_text(path) -> str` to pull text from page 1 using a pure-Python library.
+- Implement per-file candidate generator producing multiple candidates with confidence scores (Arabic, Roman, leading-number, number+dash/dot or heading prefixes).
+- Implement global inference to reconcile candidates across files using filename evidence and frequency heuristics; output proposed mapping and per-file candidate lists with confidences.  
+Estimated: 3–5 hours.
+
+### Phase 2 — Naming & Suggestion Engine (priority: High)
+- Build suggestion rules to create suggested filenames from inferred chapter numbers and infer a sensible style for the run (e.g., `N - original`, `Chapter NN - original`).  
+- Add safe canonicalization (strip illegal chars, normalize spaces).  
+Estimated: 2–3 hours.
+
+### Phase 3 — Interactive Sign-off UI (priority: High)
+- Present a sign-off summary showing the proposed mapping and, for ambiguous files, top-N candidates with confidence scores.  
+- Allow user actions: **accept all**, **choose candidate**, **edit filename**, **skip**, or **mark for later**.  
+- Emphasize clear messaging for files with no candidates or low-confidence assignments.  
+Estimated: 3–4 hours.
+
+### Phase 4 — Apply Copy & Conflict Handling (priority: Medium)
+- Create `original_folder/chapterize`; if it already exists, create `chapterize_2`, `chapterize_3`, etc., incrementing the index.  
+- Copy files into the target folder; on filename collision append `_1`, `_2`, … until unique.  
+- Save a `mapping.json` with original -> target info for auditability and reversal.  
+Estimated: 1–2 hours.
+
+### Phase 5 — Tests, Docs & CI (priority: Medium)
+- Unit tests: extraction, candidate generation & scoring, global inference, naming rules, conflict suffix logic.  
+- Integration tests: a small sample corpus (including ambiguous cases) and a simulated interactive run using recorded input.  
+- Docs: `docs/USAGE.md` showing default flow and how to change `PROGRAM_NAME`.  
+Estimated: 2–4 hours.
+
+### Phase 6 — Future / Nice-to-have Items (low priority)
+- OCR fallback, GUI, packaging, advanced conflict strategies, more extensive test coverage.
+
+---
+
+## Acceptance criteria ✅
+- The inference step runs before interaction and produces a proposed mapping and per-file candidate lists with confidence scores.
+- The sign-off screen shows top candidates and allows **accept all** or per-file changes prior to any copying.
+- Files are copied into `original_folder/chapterize` (or `chapterize_2`, …) and a `mapping.json` is written.
+- Unit tests cover inference, candidate scoring, and conflict handling; integration tests exercise an end-to-end simulated run.
+
+---
+
+## Sign-off options & small UX question 💬
+- Option: offer a small set of filename style templates (e.g., `N - original`, `Chapter NN - original`) that the user can select for the whole run, in addition to per-file edits.  This makes the naming consistent and reduces per-file work.  
+- Recommendation: include templates as a default suggestion on the sign-off screen; allow the user to switch to per-file edits if desired.
+
+---
+
