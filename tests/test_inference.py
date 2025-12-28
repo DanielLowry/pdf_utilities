@@ -120,3 +120,27 @@ def test_all_candidates_dropped_results_in_none_status():
     assert result['a.pdf']['best'] is None
     assert result['a.pdf']['candidates'] == []
     assert result['a.pdf']['status'] == 'none'
+
+
+def test_duplicate_penalty_ignores_non_best_candidates():
+    file_candidates = {
+        'a.pdf': [('11', 0.9), ('1', 0.8)],
+        'b.pdf': [('1', 0.85)],
+    }
+    result = global_inference(file_candidates, {})
+    # Only the best candidate per file is used for duplicate frequency; '11' should remain strong.
+    assert result['a.pdf']['best'][0] == '11'
+    assert result['a.pdf']['best'][1] >= 0.9
+    assert result['b.pdf']['best'][0] == '1'
+
+
+def test_duplicate_penalty_applies_when_best_conflicts():
+    file_candidates = {
+        'a.pdf': [('1', 0.95), ('11', 0.5)],
+        'b.pdf': [('1', 0.8), ('2', 0.75)],
+    }
+    result = global_inference(file_candidates, {})
+    # Both files initially favor chapter 1, so it incurs a duplicate penalty.
+    assert result['a.pdf']['best'][0] == '1'
+    assert result['a.pdf']['best'][1] == 0.55
+    assert result['b.pdf']['best'][0] == '2'

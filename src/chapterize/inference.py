@@ -73,9 +73,19 @@ def global_inference(
             'candidates': list of (chapter_str, confidence)
             'status': 'ok' | 'ambiguous' | 'none'
     """
-    # Count all candidate numbers for global frequency
-    all_candidates = [c[0] for cands in file_candidates.values() for c in cands]
-    freq = Counter(all_candidates)
+    # Determine each file's top candidate before duplicates to keep penalty focused on real aliases
+    base_best = {}
+    for fname, cands in file_candidates.items():
+        base_scores = []
+        for c, conf in cands:
+            filename_boost = 0.5 if fname in filename_chapters and filename_chapters[fname] == c else 0.0
+            score = max(0.0, min(1.0, conf + filename_boost))
+            base_scores.append((c, score))
+        if not base_scores:
+            continue
+        base_scores.sort(key=lambda x: x[1], reverse=True)
+        base_best[fname] = base_scores[0][0]
+    freq = Counter(base_best.values())
     chapters_in_filenames = set(filename_chapters.values())
     assigned_chapters = Counter()
     result = {}

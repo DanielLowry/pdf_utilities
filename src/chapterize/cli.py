@@ -3,19 +3,41 @@ cli.py — Main entrypoint for chapterize
 
 This script integrates extraction, inference, interactive sign-off, naming, and copying logic.
 """
+import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-import os
+from typing import List, Tuple
 
 from chapterize.candidates import extract_candidates
 from chapterize.copier import copy_files_with_mapping
-from chapterize.extract import extract_document_text
+from chapterize.extract import iterate_document_pages
 from chapterize.filenames import extract_chapter_from_filename
 from chapterize.inference import global_inference
 from chapterize.interactive import interactive_signoff
 from chapterize.logging_config import configure_logging
 from chapterize.naming import suggest_filename
+
+
+def _page_bonus(offset: int) -> float:
+    """Return the confidence bonus for candidates offset from the first meaningful page."""
+    return max(0.0, 0.25 - min(offset, 6) * 0.04)
+
+
+def collect_candidates_from_pdf(pdf_path: Path) -> List[Tuple[str, float]]:
+    """Collect chapter candidates from every page while weighting early pages."""
+    candidates: List[Tuple[str, float]] = []
+    first_non_blank = None
+    for page_index, text in iterate_document_pages(pdf_path):
+        if not text:
+            continue
+        if first_non_blank is None:
+            first_non_blank = page_index
+        offset = page_index - (first_non_blank or page_index)
+        for chapter, conf in extract_candidates(text):
+            boosted = min(1.0, conf + _page_bonus(offset))
+            candidates.append((chapter, boosted))
+    return candidates
 
 logger = configure_logging()
 
@@ -34,18 +56,23 @@ def main():
         print("No PDF files found in the folder.")
         sys.exit(1)
     print(f"Found {len(pdf_files)} PDF files.")
-    # Step 1: Extract candidates (whole document) in parallel
+    # Step 1: Extract candidates (whole document) in parallel. This step is still memory hungry
+    # because `pdfplumber` loads page buffers, so keep the pool small and stream outputs.
     file_candidates = {}
-    workers = max(1, min(8, os.cpu_count() or 1))
+    workers = max(1, min(4, os.cpu_count() or 2))
     max_workers = min(workers, len(pdf_files))
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(extract_document_text, f): f for f in pdf_files}
+        future_to_file = {executor.submit(collect_candidates_from_pdf, f): f for f in pdf_files}
+        scanned = 0
+        print("Scanning PDF files for chapter candidates...")
         for future in as_completed(future_to_file):
             f = future_to_file[future]
-            text = future.result()
-            candidates = extract_candidates(text)
+            candidates = future.result()
             file_candidates[f.name] = candidates
             logger.debug("Extracted %d candidates for %s", len(candidates), f.name)
+            scanned += 1
+            print(f"\r Scanned {scanned}/{len(pdf_files)} files", end="", flush=True)
+        print()
     logger.debug("Filename-based chapter hints:")
     filename_chapters = {}
     for f in pdf_files:

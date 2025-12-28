@@ -21,7 +21,9 @@
 - Safe copying, collision handling
 - Mapping file for auditability
 - Filename hints: filenames such as `Chapter 3 - intro.pdf` or `05-overview.pdf` are automatically parsed and used to bias inference.
+- Early-page bias: the first non-blank pages get a small confidence boost so late-document noise cannot override the natural chapter order.
 - Parallel extraction: each PDF is scanned across all pages, and files are processed concurrently so you still get fast feedback.
+- Progress insight: the CLI prints a live “Scanned X/Y files” counter while it gathers candidates so you can see progress.
 
 ## Requirements
 - Python 3.10+
@@ -34,7 +36,7 @@
 ## Advanced
 - To change the output folder name, edit `PROGRAM_NAME` in `src/chapterize/config.py`.
 - For custom filename templates, modify `src/chapterize/naming.py`.
-- To see what `chapterize` is doing internally, set logging via the `CHAPTERIZE_LOG_LEVEL` (defaults to `WARNING`). You can also write the log to a file by setting `CHAPTERIZE_LOG_FILE` before running the CLI; the logger uses the `chapterize` namespace.
+- To see what `chapterize` is doing internally, set logging via the `CHAPTERIZE_LOG_LEVEL` (defaults to `INFO`). Logs now written to `chapterize.log` in the current working directory unless you override `CHAPTERIZE_LOG_FILE`. Only entries emitted from the `chapterize` namespace are included in the log so third-party noise stays muted.
 
 ## Limitations
 - No OCR fallback (yet)
