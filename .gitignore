@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+*.log
+*.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# Test and coverage outputs
+htmlcov/
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PDF utilities output
+with_chapters*/
+*.pdf~
+
+# Mapping files
+mapping.json
