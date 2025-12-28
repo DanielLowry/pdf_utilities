@@ -4,11 +4,13 @@ cli.py — Main entrypoint for chapterize
 This script integrates extraction, inference, interactive sign-off, naming, and copying logic.
 """
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+import os
 
 from chapterize.candidates import extract_candidates
 from chapterize.copier import copy_files_with_mapping
-from chapterize.extract import extract_first_page_text
+from chapterize.extract import extract_document_text
 from chapterize.filenames import extract_chapter_from_filename
 from chapterize.inference import global_inference
 from chapterize.interactive import interactive_signoff
@@ -32,13 +34,18 @@ def main():
         print("No PDF files found in the folder.")
         sys.exit(1)
     print(f"Found {len(pdf_files)} PDF files.")
-    # Step 1: Extract candidates
+    # Step 1: Extract candidates (whole document) in parallel
     file_candidates = {}
-    for f in pdf_files:
-        text = extract_first_page_text(f)
-        candidates = extract_candidates(text)
-        file_candidates[f.name] = candidates
-        logger.debug("Extracted %d candidates for %s", len(candidates), f.name)
+    workers = max(1, min(8, os.cpu_count() or 1))
+    max_workers = min(workers, len(pdf_files))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_file = {executor.submit(extract_document_text, f): f for f in pdf_files}
+        for future in as_completed(future_to_file):
+            f = future_to_file[future]
+            text = future.result()
+            candidates = extract_candidates(text)
+            file_candidates[f.name] = candidates
+            logger.debug("Extracted %d candidates for %s", len(candidates), f.name)
     logger.debug("Filename-based chapter hints:")
     filename_chapters = {}
     for f in pdf_files:

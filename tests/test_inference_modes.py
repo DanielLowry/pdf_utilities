@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from chapterize.extract import extract_first_page_text
+from chapterize.extract import extract_document_text
 from chapterize.candidates import extract_candidates
 from chapterize.inference import global_inference
 
@@ -39,7 +39,7 @@ def test_inference_conflicting_modes(tmp_path):
     files = [make_pdf_with_text(text, tmp_path, fname) for text, fname in group1 + group2 + group3]
     file_candidates = {}
     for f in files:
-        text = extract_first_page_text(f)
+        text = extract_document_text(f)
         file_candidates[f.name] = extract_candidates(text)
     result = global_inference(file_candidates, {})
     # Check that all files have candidates, but ambiguous status may occur due to conflicting modes

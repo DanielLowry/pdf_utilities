@@ -2,7 +2,7 @@
 
 ## Overview
 
-`chapterize` is an interactive tool for renaming and organizing PDF files by inferred chapter number. It extracts chapter numbers from PDF text, proposes filenames, lets you review and edit assignments, and copies files into a new folder with a mapping for auditability.
+`chapterize` is an interactive tool for renaming and organizing PDF files by inferred chapter number. It extracts chapter numbers from PDF text (scanning every page, not just the first), proposes filenames, lets you review and edit assignments, and copies files into a new folder with a mapping for auditability.
 
 ## Quick Start
 
@@ -21,6 +21,7 @@
 - Safe copying, collision handling
 - Mapping file for auditability
 - Filename hints: filenames such as `Chapter 3 - intro.pdf` or `05-overview.pdf` are automatically parsed and used to bias inference.
+- Parallel extraction: each PDF is scanned across all pages, and files are processed concurrently so you still get fast feedback.
 
 ## Requirements
 - Python 3.10+

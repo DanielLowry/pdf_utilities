@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from chapterize.extract import extract_first_page_text
+from chapterize.extract import extract_document_text
 from chapterize.candidates import extract_candidates
 from chapterize.inference import global_inference
 
@@ -37,7 +37,7 @@ def test_inference_multiple_pdfs_robust(tmp_path):
     files = [make_pdf_with_text(text, tmp_path, fname) for text, fname, _ in pdf_specs]
     file_candidates = {}
     for idx, f in enumerate(files):
-        text = extract_first_page_text(f)
+        text = extract_document_text(f)
         file_candidates[f.name] = extract_candidates(text)
     # Simulate filename chapters for a few files
     filename_chapters = {"a.pdf": "1", "b.pdf": "2", "k.pdf": "10"}
