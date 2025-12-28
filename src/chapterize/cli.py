@@ -20,24 +20,40 @@ from chapterize.naming import suggest_filename
 
 
 def _page_bonus(offset: int) -> float:
-    """Return the confidence bonus for candidates offset from the first meaningful page."""
-    return max(0.0, 0.25 - min(offset, 6) * 0.04)
+    """
+    Return the confidence bonus for candidates offset from the first meaningful page.
+    Earlier pages get a stronger boost; later pages are slightly discounted to reduce noise.
+    """
+    return max(-0.3, 0.3 - 0.15 * offset)
 
 
 def collect_candidates_from_pdf(pdf_path: Path) -> List[Tuple[str, float]]:
-    """Collect chapter candidates from every page while weighting early pages."""
-    candidates: List[Tuple[str, float]] = []
+    """
+    Collect chapter candidates from every page while weighting early pages.
+    Duplicates are collapsed per chapter, keeping the highest-scoring (earliest) instance.
+    """
+    best_by_chapter: Dict[str, Tuple[float, int]] = {}
     first_non_blank = None
     for page_index, text in iterate_document_pages(pdf_path):
-        if not text:
+        if not text or not text.strip():
             continue
         if first_non_blank is None:
             first_non_blank = page_index
-        offset = page_index - (first_non_blank or page_index)
+        offset = page_index - first_non_blank
+        bonus = _page_bonus(offset)
         for chapter, conf in extract_candidates(text):
-            boosted = min(1.0, conf + _page_bonus(offset))
-            candidates.append((chapter, boosted))
-    return candidates
+            boosted = max(0.0, min(1.0, conf + bonus))
+            current = best_by_chapter.get(chapter)
+            if current is None or boosted > current[0] or (abs(boosted - current[0]) < 1e-9 and offset < current[1]):
+                best_by_chapter[chapter] = (boosted, offset)
+    # Sort by descending score then earliest offset
+    def sort_key(item: Tuple[str, Tuple[float, int]]):
+        chapter, (score, offset) = item
+        numeric = int(chapter) if chapter.isdigit() else -1
+        return (-score, offset, -numeric)
+
+    ordered = sorted(best_by_chapter.items(), key=sort_key)
+    return [(chapter, score) for chapter, (score, _) in ordered]
 
 logger = configure_logging()
 
