@@ -105,3 +105,18 @@ def test_duplicate_candidates_same_score_close_alternative_flags_ambiguous():
     assert result['b.pdf']['status'] == 'ambiguous'
     score_diff = result['b.pdf']['candidates'][0][1] - result['b.pdf']['candidates'][1][1]
     assert score_diff < 0.1
+
+
+def test_candidates_below_threshold_are_dropped():
+    file_candidates = {'a.pdf': [('1', 0.95), ('2', 0.08)]}
+    result = global_inference(file_candidates, {})
+    assert result['a.pdf']['best'] == ('1', 0.95)
+    assert result['a.pdf']['candidates'] == [('1', 0.95)]
+
+
+def test_all_candidates_dropped_results_in_none_status():
+    file_candidates = {'a.pdf': [('1', 0.09), ('2', 0.05)]}
+    result = global_inference(file_candidates, {})
+    assert result['a.pdf']['best'] is None
+    assert result['a.pdf']['candidates'] == []
+    assert result['a.pdf']['status'] == 'none'

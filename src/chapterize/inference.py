@@ -41,11 +41,14 @@ from collections import Counter
 # Candidate: (chapter_str, confidence)
 Candidate = Tuple[str, float]
 
+MIN_CANDIDATE_CONFIDENCE = 0.1
+
 def global_inference(
     file_candidates: Dict[str, List[Candidate]],
     filename_chapters: Dict[str, str],
     expected_count: Optional[int] = None,
-    min_confidence: float = 0.5
+    min_confidence: float = 0.5,
+    candidate_threshold: float = MIN_CANDIDATE_CONFIDENCE,
 ) -> Dict[str, Dict]:
     """
     For each file, select the best candidate chapter number using confidence scores, global frequency,
@@ -60,6 +63,7 @@ def global_inference(
         filename_chapters: Dict mapping filename to chapter number found in filename (if any).
         expected_count: Optional expected number of chapters (not used in MVP, but could help).
         min_confidence: Minimum confidence required for 'ok' status (default 0.5).
+        candidate_threshold: Minimum displayed candidate score (default 0.1).
 
     Returns:
         Dict mapping filename to dict with keys:
@@ -93,15 +97,19 @@ def global_inference(
             score = max(0.0, min(score, 1.0))
             scored.append((c, score))
         scored.sort(key=lambda x: x[1], reverse=True)
-        best = scored[0]
+        filtered = [(c, s) for c, s in scored if s >= candidate_threshold]
+        if not filtered:
+            result[fname] = {"best": None, "candidates": [], "status": "none"}
+            continue
+        best = filtered[0]
         assigned_chapters[best[0]] += 1
         # Ambiguous if top two are close in score or if best score is low
-        ambiguous = len(scored) > 1 and (scored[0][1] - scored[1][1] < 0.1)
+        ambiguous = len(filtered) > 1 and (filtered[0][1] - filtered[1][1] < 0.1)
         if ambiguous:
             status = "ambiguous"
         elif best[1] < min_confidence:
             status = "none"
         else:
             status = "ok"
-        result[fname] = {"best": best, "candidates": scored, "status": status}
+        result[fname] = {"best": best, "candidates": filtered, "status": status}
     return result
