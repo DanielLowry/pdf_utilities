@@ -20,7 +20,7 @@ def format_confidence(confidence: float) -> str:
 
 
 def print_table(mapping: Dict[str, Dict], top_n: int = 3):
-    print("\nSuggested Chapter Assignments (confidence: 0% = low, 100% = high):\n")
+    print("\nSuggested Chapter Assignments (confidence: 10%+ displayed, 100% = high):\n")
     print(f"{'File':40} | {'Best':8} | {'Confidence':10} | Candidates (chapter [confidence])")
     print("-" * 100)
     for fname, info in mapping.items():
@@ -30,7 +30,7 @@ def print_table(mapping: Dict[str, Dict], top_n: int = 3):
         status = info['status']
         marker = '!' if status != 'ok' else ' '
         print(f"{fname:40} | {best:8} | {conf:10} | {cands} {marker}")
-    print("\n! = ambiguous or missing assignment\nConfidence: 0% = low, 100% = high\n")
+    print("\n! = ambiguous or missing assignment\nDisplayed confidence: 10% minimum (lower scores suppressed)\n")
 
 def interactive_signoff(mapping: Dict[str, Dict], top_n: int = 3):
     print_table(mapping, top_n)
