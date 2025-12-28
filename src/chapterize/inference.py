@@ -1,9 +1,45 @@
+
+"""
+inference.py — Chapter number inference logic for PDF utilities
+
+This module provides the core logic for inferring chapter numbers from a set of PDF files.
+It takes candidate chapter numbers (with confidence scores) extracted from each file's text,
+and reconciles them globally to produce a best-guess mapping for each file, including ambiguous cases.
+
+Key concepts:
+- Candidates: Each file may have multiple possible chapter numbers, each with a confidence score.
+- Global frequency: Candidates that appear frequently across files are considered more likely.
+- Filename evidence: If a filename already contains a chapter number, that candidate is boosted.
+- Ambiguity: If multiple candidates have similar scores, the file is flagged as ambiguous for user review.
+- Confidence threshold: If the best candidate's score is below a minimum, the file is flagged as 'none'.
+
+Returned mapping:
+    {
+        filename: {
+            "best": (chapter_str, confidence),
+            "candidates": [(chapter_str, confidence), ...],
+            "status": "ok" | "ambiguous" | "none"
+        },
+        ...
+    }
+
+Usage:
+    file_candidates = {
+        'a.pdf': [('1', 0.9)],
+        'b.pdf': [('2', 0.9)],
+        'c.pdf': [('1', 0.7), ('2', 0.6)]
+    }
+    filename_chapters = {'a.pdf': '1'}
+    result = global_inference(file_candidates, filename_chapters)
+
+See tests/test_inference.py for examples.
+"""
+
 from typing import Dict, List, Tuple, Optional
 from collections import Counter
 
 # Candidate: (chapter_str, confidence)
 Candidate = Tuple[str, float]
-
 
 def global_inference(
     file_candidates: Dict[str, List[Candidate]],
@@ -12,8 +48,24 @@ def global_inference(
     min_confidence: float = 0.5
 ) -> Dict[str, Dict]:
     """
-    For each file, select the best candidate (highest confidence, most common across files, matches filename if present).
-    Returns a dict: {filename: {"best": (chapter, conf), "candidates": [...], "status": "ok"|"ambiguous"|"none"}}
+    For each file, select the best candidate chapter number using confidence scores, global frequency,
+    and filename evidence. Returns a mapping for each file with the best candidate, all candidates (scored),
+    and a status flag:
+        - 'ok': confident assignment
+        - 'ambiguous': multiple candidates with similar scores
+        - 'none': no confident candidate found
+
+    Args:
+        file_candidates: Dict mapping filename to list of (chapter_str, confidence) candidates.
+        filename_chapters: Dict mapping filename to chapter number found in filename (if any).
+        expected_count: Optional expected number of chapters (not used in MVP, but could help).
+        min_confidence: Minimum confidence required for 'ok' status (default 0.5).
+
+    Returns:
+        Dict mapping filename to dict with keys:
+            'best': (chapter_str, confidence)
+            'candidates': list of (chapter_str, confidence)
+            'status': 'ok' | 'ambiguous' | 'none'
     """
     # Count all candidate numbers for global frequency
     all_candidates = [c[0] for cands in file_candidates.values() for c in cands]
