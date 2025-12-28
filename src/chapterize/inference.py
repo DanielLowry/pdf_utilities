@@ -70,24 +70,34 @@ def global_inference(
     # Count all candidate numbers for global frequency
     all_candidates = [c[0] for cands in file_candidates.values() for c in cands]
     freq = Counter(all_candidates)
+    chapters_in_filenames = set(filename_chapters.values())
+    assigned_chapters = Counter()
     result = {}
     for fname, cands in file_candidates.items():
         if not cands:
             result[fname] = {"best": None, "candidates": [], "status": "none"}
             continue
-        # Score: confidence * (1 + freq weight)
-        scored = [(c, conf * (1 + 0.2 * freq[c])) for c, conf in cands]
+        # Score: base confidence, penalize duplicate assignments, boost filename evidence
+        scored = []
+        for c, conf in cands:
+            # Penalize if candidate is assigned to multiple files (except if filename evidence)
+            duplicate_penalty = 0.0
+            if freq[c] > 1 and (fname not in filename_chapters or filename_chapters[fname] != c):
+                duplicate_penalty = -0.4 * (freq[c] - 1)
+            # Boost if filename evidence
+            filename_boost = 0.0
+            if fname in filename_chapters and filename_chapters[fname] == c:
+                filename_boost = 0.5
+            score = conf + filename_boost + duplicate_penalty
+            # Clamp score to [0.0, 1.0]
+            score = max(0.0, min(score, 1.0))
+            scored.append((c, score))
         scored.sort(key=lambda x: x[1], reverse=True)
         best = scored[0]
-        # If filename has a chapter, boost that candidate
-        if fname in filename_chapters:
-            for i, (c, s) in enumerate(scored):
-                if c == filename_chapters[fname]:
-                    scored[i] = (c, s + 0.2)
-            scored.sort(key=lambda x: x[1], reverse=True)
-            best = scored[0]
-        # Ambiguous if top two are close in score
-        if len(scored) > 1 and (scored[0][1] - scored[1][1] < 0.1):
+        assigned_chapters[best[0]] += 1
+        # Ambiguous if top two are close in score or if best score is low
+        ambiguous = len(scored) > 1 and (scored[0][1] - scored[1][1] < 0.1)
+        if ambiguous:
             status = "ambiguous"
         elif best[1] < min_confidence:
             status = "none"
