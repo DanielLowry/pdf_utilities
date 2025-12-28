@@ -22,7 +22,7 @@
 - Mapping file for auditability
 - Filename hints: filenames such as `Chapter 3 - intro.pdf` or `05-overview.pdf` are automatically parsed and used to bias inference.
 - Early-page bias: the first non-blank pages get a small confidence boost so late-document noise cannot override the natural chapter order.
-- Parallel extraction: each PDF is scanned across all pages, and files are processed concurrently so you still get fast feedback.
+- Parallel extraction: each PDF is scanned across all pages, and files are processed concurrently using a process pool (GIL-free by default); the pool is kept small to limit memory.
 - Progress insight: the CLI prints a live “Scanned X/Y files” counter while it gathers candidates so you can see progress.
 
 ## Requirements

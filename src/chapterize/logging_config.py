@@ -8,7 +8,7 @@ import logging
 import os
 import sys
 
-DEFAULT_LEVEL = "DEBUG"
+DEFAULT_LEVEL = "WARNING"
 DEFAULT_LOG_FILE = "chapterize.log"
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 

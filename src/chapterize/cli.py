@@ -5,7 +5,7 @@ This script integrates extraction, inference, interactive sign-off, naming, and 
 """
 import os
 import sys
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Tuple
 
@@ -72,12 +72,13 @@ def main():
         print("No PDF files found in the folder.")
         sys.exit(1)
     print(f"Found {len(pdf_files)} PDF files.")
-    # Step 1: Extract candidates (whole document) in parallel. This step is still memory hungry
-    # because `pdfplumber` loads page buffers, so keep the pool small and stream outputs.
+    # Step 1: Extract candidates (whole document) in parallel via process pool to bypass the GIL.
+    # This step is memory hungry because `pdfplumber` loads page buffers, so keep the pool small and stream outputs.
     file_candidates = {}
     workers = max(1, min(4, os.cpu_count() or 2))
     max_workers = min(workers, len(pdf_files))
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    logger.debug("Using ProcessPoolExecutor with %d workers", max_workers)
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         future_to_file = {executor.submit(collect_candidates_from_pdf, f): f for f in pdf_files}
         scanned = 0
         print("Scanning PDF files for chapter candidates...")
