@@ -43,6 +43,7 @@ from typing import Dict, List, Tuple, Optional
 Candidate = Tuple[str, float]
 
 MIN_CANDIDATE_CONFIDENCE = 0.1
+CONFIDENCE_EPS = 1e-6
 logger = logging.getLogger("chapterize.inference")
 
 def global_inference(
@@ -102,10 +103,13 @@ def global_inference(
         # Score: base confidence, penalize duplicate assignments, boost filename evidence
         scored = []
         for c, conf in cands:
-            # Penalize if candidate is assigned to multiple files (except if filename evidence)
+            # Penalize if candidate is assigned to multiple files (except if filename evidence).
+            # Scale the penalty by the number of unique best guesses so that diverse datasets
+            # (many different chapters) are penalized less aggressively than a homogeneous set.
             duplicate_penalty = 0.0
             if freq[c] > 1 and (fname not in filename_chapters or filename_chapters[fname] != c):
-                duplicate_penalty = -0.4 * (freq[c] - 1)
+                diversity = max(1, len(freq))
+                duplicate_penalty = -0.4 * (freq[c] - 1) / diversity
             # Boost if filename evidence
             filename_boost = 0.0
             if fname in filename_chapters and filename_chapters[fname] == c:
@@ -130,7 +134,7 @@ def global_inference(
         ambiguous = len(filtered) > 1 and (filtered[0][1] - filtered[1][1] < 0.1)
         if ambiguous:
             status = "ambiguous"
-        elif best[1] < min_confidence:
+        elif best[1] + CONFIDENCE_EPS < min_confidence:
             status = "none"
         else:
             status = "ok"

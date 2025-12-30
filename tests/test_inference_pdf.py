@@ -3,17 +3,16 @@ from pathlib import Path
 from chapterize.extract import extract_document_text
 from chapterize.candidates import extract_candidates
 from chapterize.inference import global_inference
-
-try:
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import letter
-except ImportError:
-    pytest.skip("reportlab not installed", allow_module_level=True)
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
 def make_pdf_with_text(text: str, tmp_path: Path, fname: str) -> Path:
     pdf_path = tmp_path / fname
     c = canvas.Canvas(str(pdf_path), pagesize=letter)
-    c.drawString(100, 700, text)
+    y = 700
+    for line in text.splitlines() or [""]:
+        c.drawString(100, y, line)
+        y -= 20
     c.save()
     return pdf_path
 
