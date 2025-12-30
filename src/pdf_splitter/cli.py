@@ -18,6 +18,9 @@ def prompt_path(prompt: str, default: str | None = None, must_exist: bool = Fals
         if not raw:
             print("Please enter a path.")
             continue
+        # Accept pasted paths with quotes (common when paths contain spaces)
+        if (raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'")):
+            raw = raw[1:-1]
         path = Path(raw).expanduser()
         if must_exist and not path.exists():
             print(f"{path} does not exist. Try again.")
