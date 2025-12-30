@@ -43,3 +43,22 @@ def test_split_pdf_creates_named_files(tmp_path):
     for out in outputs:
         reader = PdfReader(str(out))
         assert len(reader.pages) >= 1
+
+
+def test_split_pdf_respects_template_and_fallback_numbering(tmp_path):
+    pdf_path = tmp_path / "outlined.pdf"
+    writer = PdfWriter()
+    for _ in range(3):
+        writer.add_blank_page(width=612, height=792)
+    writer.add_outline_item("Preface", 0)  # no explicit number, should fallback to index 1
+    writer.add_outline_item("Chapter 7", 1)  # explicit number
+    with pdf_path.open("wb") as handle:
+        writer.write(handle)
+
+    output_dir = tmp_path / "templated"
+    outputs = split_pdf(pdf_path, output_dir, template="Chapter {chapter:02d} - {original}")
+    names = sorted(p.name for p in outputs)
+    assert names == [
+        "Chapter 01 - Preface.pdf",
+        "Chapter 07 - Chapter 7.pdf",
+    ]
