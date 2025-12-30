@@ -7,16 +7,16 @@ import os
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from chapterize.candidates import extract_candidates
 from chapterize.copier import copy_files_with_mapping
 from chapterize.extract import iterate_document_pages
-from chapterize.filenames import extract_chapter_from_filename
 from chapterize.inference import global_inference
 from chapterize.interactive import interactive_signoff
 from chapterize.logging_config import configure_logging
-from chapterize.naming import suggest_filename
+from pdf_common.filenames import extract_chapter_from_filename
+from pdf_common.naming import suggest_filename
 
 
 def _page_bonus(offset: int) -> float:
