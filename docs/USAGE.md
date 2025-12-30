@@ -12,7 +12,7 @@
 
 1. Place your PDFs in a folder.
 2. Run the main entrypoint script:
-    - Example: `python -m chapterize.cli` or `chapterize` after install.
+    - `uv run python -m chapterize.cli` (no install), or `uv run chapterize` after `uv run pip install -e .`.
 3. Review the interactive sign-off screen:
    - Accept all assignments, or edit/skip files as needed.
 4. Files are copied into `chapterize` (or `chapterize_2`, etc.), with collisions resolved by numeric suffixes.
@@ -20,7 +20,7 @@
 
 ### pdf-splitter
 
-1. Run `python -m pdf_splitter.cli` or `pdf-splitter` after install.
+1. Run `uv run python -m pdf_splitter.cli` (no install), or `uv run pdf-splitter` after `uv run pip install -e .`.
 2. Enter the source PDF path when prompted.
 3. Accept the suggested output folder (defaults to `<name>_split`) or provide another.
 4. Optionally provide a filename template (e.g., `Chapter {chapter:02d} - {original}`) or press Enter for the default.
