@@ -60,16 +60,28 @@ def extract_sections(reader: PdfReader) -> List[Section]:
     return sections
 
 
+def _extract_section_text(reader: PdfReader, start: int, end: int) -> str:
+    """Extract raw text for a given page range (best-effort)."""
+    chunks: List[str] = []
+    for page_idx in range(start, end):
+        page = reader.pages[page_idx]
+        text = page.extract_text() or ""
+        if text:
+            chunks.append(text.strip())
+    return "\n\n".join(chunks)
+
+
 def split_pdf(
     input_pdf: Path | str,
     output_dir: Path | str,
     template: str | None = None,
     warn_on_overwrite: bool = True,
+    extract_text: bool = False,
 ) -> List[Path]:
     """
     Split a PDF into per-section files based on its outline/bookmarks.
 
-    Returns the list of generated file paths.
+    Returns the list of generated PDF file paths.
     """
     input_pdf = Path(input_pdf)
     output_dir = Path(output_dir)
@@ -96,4 +108,11 @@ def split_pdf(
         with out_path.open("wb") as handle:
             writer.write(handle)
         generated.append(out_path)
+
+        if extract_text:
+            text_path = out_path.with_suffix(".txt")
+            if warn_on_overwrite and text_path.exists():
+                print(f"Warning: overwriting existing file {text_path}")
+            content = _extract_section_text(reader, int(section["start"]), int(section["end"]))
+            text_path.write_text(content, encoding="utf-8")
     return generated

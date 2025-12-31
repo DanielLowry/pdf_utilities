@@ -39,6 +39,7 @@ def main() -> int:
     default_out = str(source.with_name(f"{source.stem}_split"))
     dest = prompt_path("Output folder", default_out, must_exist=False)
     template = input("Optional filename template (press Enter for default): ").strip() or None
+    export_text = confirm("Also export per-section text files?")
 
     try:
         reader = PdfReader(str(source))
@@ -61,7 +62,7 @@ def main() -> int:
         return 0
 
     try:
-        outputs = split_pdf(source, dest, template=template)
+        outputs = split_pdf(source, dest, template=template, extract_text=export_text)
     except Exception as exc:
         print(f"Error while splitting: {exc}", file=sys.stderr)
         return 1

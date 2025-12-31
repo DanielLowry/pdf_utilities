@@ -62,3 +62,38 @@ def test_split_pdf_respects_template_and_fallback_numbering(tmp_path):
         "Chapter 01 - Preface.pdf",
         "Chapter 07 - Chapter 7.pdf",
     ]
+
+
+def test_split_pdf_can_export_text(tmp_path):
+    # Build a PDF with actual text using reportlab, then add outlines via pypdf
+    rich_pdf = tmp_path / "rich.pdf"
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+    except Exception:
+        pytest.skip("reportlab not available for text extraction test")
+
+    c = canvas.Canvas(str(rich_pdf), pagesize=letter)
+    c.drawString(100, 700, "Intro page text")
+    c.showPage()
+    c.drawString(100, 700, "Chapter 2 text here")
+    c.save()
+
+    reader = PdfReader(str(rich_pdf))
+    writer = PdfWriter()
+    writer.append_pages_from_reader(reader)
+    writer.add_outline_item("Intro", 0)
+    writer.add_outline_item("Chapter 2", 1)
+    outlined = tmp_path / "outlined.pdf"
+    with outlined.open("wb") as handle:
+        writer.write(handle)
+
+    out_dir = tmp_path / "txt_out"
+    outputs = split_pdf(outlined, out_dir, extract_text=True)
+    # Two PDFs and two text files should be present
+    text_files = sorted(out_dir.glob("*.txt"))
+    assert len(outputs) == 2
+    assert len(text_files) == 2
+    content = text_files[0].read_text(encoding="utf-8") + text_files[1].read_text(encoding="utf-8")
+    assert "Intro page text" in content
+    assert "Chapter 2 text here" in content
