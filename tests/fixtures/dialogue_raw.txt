@@ -1,0 +1,29 @@
+A Dialogue on the Book
+Professor:Welcometothisbook!It’scalledOperatingSystemsinThreeEasy
+Pieces,andIamheretoteachyouthethingsyouneedtoknowaboutoperating
+systems.Iamcalled“Professor”;whoareyou?
+Student:HiProfessor!Iamcalled“Student”,asyoumighthaveguessed.And
+Iamhereandreadytolearn!
+Professor:Soundsgood.Anyquestions?
+Student:Sure!Whyisitcalled“ThreeEasyPieces”?
+Professor: That’saneasyone. Well,yousee,therearethesegreatlectureson
+PhysicsbyRichardFeynman...
+Student:Oh!Theguywhowrote“SurelyYou’reJoking,Mr.Feynman”,right?
+Greatbook!Isthisgoingtobehilariouslikethatbookwas?
+Professor: Um... well, no. Thatbookwasgreat, andI’mgladyou’vereadit.
+HopefullythisbookismorelikehisnotesonPhysics. Someofthebasicswere
+summedupinabookcalled“SixEasyPieces”. HewastalkingaboutPhysics;
+we’regoingtodoThreeEasyPiecesonthefinetopicofOperatingSystems.This
+isappropriate,asOperatingSystemsareabouthalfashardasPhysics.
+Student:Well,Ilikedphysics,sothatisprobablygood.Whatarethosepieces?
+Professor:Theyarethethreekeyideaswe’regoingtolearnabout:virtualiza-
+tion,concurrency,andpersistence. Inlearningabouttheseideas,we’lllearn
+allabouthowanoperatingsystemworks,includinghowitdecideswhatprogram
+torunnextonaCPU,howithandlesmemoryoverloadinavirtualmemorysys-
+tem,howvirtualmachinemonitorswork,howtomanageinformationondisks,
+andevenalittleabouthowtobuildadistributedsystemthatworkswhenparts
+havefailed.Thatsortofstuff.
+Student:Ihavenoideawhatyou’retalkingabout,really.
+Professor:Good!Thatmeansyouareintherightclass.
+Student:Ihaveanotherquestion:what’sthebestwaytolearnthisstuff?
+1

@@ -4,6 +4,7 @@ from typing import Dict, Iterable, List, Tuple
 from pypdf import PdfReader, PdfWriter
 from pdf_common.filenames import extract_chapter_from_filename
 from pdf_common.naming import suggest_filename
+from pdf_common.text import extract_text_range
 
 Section = Dict[str, object]  # keys: title (str), start (int), end (int)
 
@@ -60,17 +61,6 @@ def extract_sections(reader: PdfReader) -> List[Section]:
     return sections
 
 
-def _extract_section_text(reader: PdfReader, start: int, end: int) -> str:
-    """Extract raw text for a given page range (best-effort)."""
-    chunks: List[str] = []
-    for page_idx in range(start, end):
-        page = reader.pages[page_idx]
-        text = page.extract_text() or ""
-        if text:
-            chunks.append(text.strip())
-    return "\n\n".join(chunks)
-
-
 def split_pdf(
     input_pdf: Path | str,
     output_dir: Path | str,
@@ -113,6 +103,6 @@ def split_pdf(
             text_path = out_path.with_suffix(".txt")
             if warn_on_overwrite and text_path.exists():
                 print(f"Warning: overwriting existing file {text_path}")
-            content = _extract_section_text(reader, int(section["start"]), int(section["end"]))
+            content = extract_text_range(input_pdf, int(section["start"]), int(section["end"]))
             text_path.write_text(content, encoding="utf-8")
     return generated

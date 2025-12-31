@@ -1,18 +1,7 @@
 from pathlib import Path
 from typing import List
 
-import pdfplumber
-
-
-def extract_text_from_pdf(pdf_path: Path) -> str:
-    """Extract text from all pages of a PDF (best-effort, ignores images)."""
-    chunks: List[str] = []
-    with pdfplumber.open(str(pdf_path)) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            if text:
-                chunks.append(text.strip())
-    return "\n\n".join(chunks)
+from pdf_common.text import extract_text
 
 
 def export_folder(
@@ -38,7 +27,7 @@ def export_folder(
         text_path = output_dir / (pdf_path.stem + ".txt")
         if warn_on_overwrite and text_path.exists():
             print(f"Warning: overwriting existing file {text_path}")
-        content = extract_text_from_pdf(pdf_path)
+        content = extract_text(pdf_path)
         text_path.write_text(content, encoding="utf-8")
         outputs.append(text_path)
         if progress:

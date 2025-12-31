@@ -2,3 +2,4 @@ pytest
 pdfplumber
 reportlab
 pypdf
+wordninja

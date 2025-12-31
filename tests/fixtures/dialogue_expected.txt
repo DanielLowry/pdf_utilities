@@ -1,0 +1,13 @@
+A Dialogue on the Book
+Professor: Welcome to this book! It’s called Operating Systems in Three Easy Pieces, and I am here to teach you the things you need to know about operating systems. I am called “Professor”; who are you?
+Student: Hi Professor! I am called “Student”, as you might have guessed. And I am here and ready to learn!
+Professor: Sounds good. Any questions?
+Student: Sure! Why is it called “Three Easy Pieces”?
+Professor: That’s an easy one. Well, you see, there are these great lectures on Physics by Richard Feynman...
+Student: Oh! The guy who wrote “Surely You’re Joking, Mr. Feynman”, right? Great book! Is this going to be hilarious like that book was?
+Professor: Um... well, no. That book was great, and I’m glad you’ve read it. Hopefully this book is more like his notes on Physics. Some of the basics were summed up in a book called “Six Easy Pieces”. He was talking about Physics; we’re going to do Three Easy Pieces on the fine topic of Operating Systems. This is appropriate, as Operating Systems are about half as hard as Physics.
+Student: Well, I liked physics, so that is probably good. What are those pieces?
+Professor: They are the three key ideas we’re going to learn about: virtualization, concurrency, and persistence. In learning about these ideas, we’ll learn all about how an operating system works, including how it decides what program to run next on a CPU, how it handles memory overload in a virtual memory system, how virtual machine monitors work, how to manage information on disks, and even a little about how to build a distributed system that works when parts have failed. That sort of stuff.
+Student: I have no idea what you’re talking about, really.
+Professor: Good! That means you are in the right class.
+Student: I have another question: what’s the best way to learn this stuff?

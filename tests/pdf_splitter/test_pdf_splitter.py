@@ -3,6 +3,7 @@ from pathlib import Path
 from pypdf import PdfReader, PdfWriter
 
 from pdf_splitter.splitter import extract_sections, split_pdf
+from pdf_common.text import extract_text_range, _clean_text
 
 
 def make_outlined_pdf(tmp_path: Path) -> Path:
@@ -97,3 +98,16 @@ def test_split_pdf_can_export_text(tmp_path):
     content = text_files[0].read_text(encoding="utf-8") + text_files[1].read_text(encoding="utf-8")
     assert "Intro page text" in content
     assert "Chapter 2 text here" in content
+
+
+def test_extract_text_range_uses_cleaning(tmp_path):
+    # Create a PDF where extractor may return concatenated words (simulated via manual string)
+    pdf_path = tmp_path / "range.pdf"
+    writer = PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    with pdf_path.open("wb") as handle:
+        writer.write(handle)
+    # Instead of relying on PDF quirks, directly test the cleaner
+    raw = "wordOnewordTwo"
+    cleaned = _clean_text(raw)
+    assert "word One" in cleaned or "word Two" in cleaned

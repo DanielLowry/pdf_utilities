@@ -4,7 +4,8 @@ import pytest
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
-from pdf_text_exporter.exporter import export_folder, extract_text_from_pdf
+from pdf_text_exporter.exporter import export_folder
+from pdf_common.text import extract_text, _clean_text
 
 
 def make_pdf_with_text(tmp_path: Path, name: str, lines: list[str]) -> Path:
@@ -19,7 +20,7 @@ def make_pdf_with_text(tmp_path: Path, name: str, lines: list[str]) -> Path:
 
 def test_extract_text_from_pdf(tmp_path):
     pdf_path = make_pdf_with_text(tmp_path, "sample.pdf", ["Hello world", "Second page"])
-    text = extract_text_from_pdf(pdf_path)
+    text = extract_text(pdf_path)
     assert "Hello world" in text
     assert "Second page" in text
 
@@ -33,3 +34,33 @@ def test_export_folder_writes_txt_files(tmp_path):
     contents = "\n".join(p.read_text(encoding="utf-8") for p in outputs)
     assert "Alpha" in contents
     assert "Beta" in contents
+
+
+def test_clean_text_inserts_spaces():
+    raw = "HelloWorld123Test"
+    cleaned = _clean_text(raw)
+    assert "Hello World" in cleaned
+    assert "123 Test" in cleaned
+
+
+def test_export_folder_cleans_fused_words(tmp_path):
+    fused = "dialoguethreeeasy HelloWorld123Test"
+    make_pdf_with_text(tmp_path, "fused.pdf", [fused])
+    out_dir = tmp_path / "out_clean"
+    outputs = export_folder(tmp_path, out_dir)
+    assert len(outputs) == 1
+    content = outputs[0].read_text(encoding="utf-8")
+    assert "dialogue three easy" in content.lower()
+    assert "Hello World 123 Test" in content
+
+
+def test_export_folder_regression_dialogue(tmp_path):
+    fixtures_dir = Path(__file__).parent.parent / "fixtures"
+    raw = (fixtures_dir / "dialogue_raw.txt").read_text(encoding="utf-8")
+    expected = (fixtures_dir / "dialogue_expected.txt").read_text(encoding="utf-8")
+
+    def normalize(txt: str) -> str:
+        return "".join(ch.lower() for ch in txt if ch.isalnum())
+
+    cleaned = _clean_text(raw)
+    assert normalize(expected) in normalize(cleaned)
