@@ -13,6 +13,7 @@ where = ["src"]
 chapterize = "chapterize.cli:main"
 pdf-splitter = "pdf_splitter.cli:main"
 pdf-text-exporter = "pdf_text_exporter.cli:main"
+pdf-page-replacer = "pdf_page_replacer.cli:main"
 
 [build-system]
 requires = ["setuptools>=65.5.1", "wheel"]
